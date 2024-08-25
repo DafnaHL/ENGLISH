@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק התאמת מילים צבעוני</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+        .game-container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            max-width: 800px;
+            width: 90%;
+        }
+        .word-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .word {
+            font-size: 18px;
+            padding: 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .word:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        .selected {
+            background-color: #a0c0ff !important;
+        }
+        .correct {
+            background-color: #90EE90 !important;
+        }
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>משחק התאמת מילים צבעוני</h1>
+        <div id="word-container" class="word-container"></div>
+        <button onclick="resetGame()">משחק חדש</button>
+    </div>
+
+    <script>
+        const words = [
+            { english: "Dog", hebrew: "כלב" },
+            { english: "Cat", hebrew: "חתול" },
+            { english: "House", hebrew: "בית" },
+            { english: "Tree", hebrew: "עץ" },
+            { english: "Book", hebrew: "ספר" },
+            { english: "Water", hebrew: "מים" },
+            { english: "Sun", hebrew: "שמש" },
+            { english: "Moon", hebrew: "ירח" }
+        ];
+
+        let selectedWords = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function getRandomColor() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 70%, 80%)`;
+        }
+
+        function createWordElement(word, language) {
+            const div = document.createElement('div');
+            div.className = 'word';
+            div.textContent = word;
+            div.style.backgroundColor = getRandomColor();
+            div.onclick = () => selectWord(div, word, language);
+            return div;
+        }
+
+        function selectWord(element, word, language) {
+            if (element.classList.contains('correct')) return;
+
+            element.classList.toggle('selected');
+
+            if (element.classList.contains('selected')) {
+                selectedWords.push({ element, word, language });
+            } else {
+                selectedWords = selectedWords.filter(w => w.element !== element);
+            }
+
+            if (selectedWords.length === 2) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [word1, word2] = selectedWords;
+
+            if (word1.language !== word2.language) {
+                const pair = words.find(pair => 
+                    (pair.english === word1.word && pair.hebrew === word2.word) ||
+                    (pair.english === word2.word && pair.hebrew === word1.word)
+                );
+
+                if (pair) {
+                    word1.element.classList.add('correct');
+                    word2.element.classList.add('correct');
+                }
+            }
+
+            selectedWords.forEach(w => w.element.classList.remove('selected'));
+            selectedWords = [];
+        }
+
+        function resetGame() {
+            const container = document.getElementById('word-container');
+            container.innerHTML = '';
+
+            const allWords = words.flatMap(pair => [
+                { word: pair.english, language: 'english' },
+                { word: pair.hebrew, language: 'hebrew' }
+            ]);
+
+            shuffleArray(allWords);
+
+            allWords.forEach(item => {
+                const element = createWordElement(item.word, item.language);
+                container.appendChild(element);
+            });
+        }
+
+        resetGame();
+    </script>
+</body>
+</html>
